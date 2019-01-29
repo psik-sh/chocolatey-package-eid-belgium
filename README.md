@@ -1,4 +1,4 @@
-﻿# <img src="https://cdn.rawgit.com/chocolatey/chocolatey-coreteampackages/5f317458cb64cb6465bb90336989d405be46066a/icons/eid-belgium.png" width="48" height="48"/> [eid-belgium](https://chocolatey.org/packages/eid-belgium)
+﻿# <img src="https://github.com/wget/chocolatey-package-eid-belgium/raw/afba49f1a20f138506b6958ee36ea7cc21b4c268/icon.png" width="48" height="48"/> [eid-belgium](https://chocolatey.org/packages/eid-belgium)
 
 This package contains the BeID middleware to be used with the Belgian electronic identity card.
 
