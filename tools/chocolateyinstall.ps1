@@ -3,9 +3,9 @@
 $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
 
 $packageArgs = @{
-  packageName    = 'eid-belgium'
+  packageName    = $env:ChocolateyPackageName
   fileType       = 'msi'
-  softwareName   = 'eid-belgium*'
+  softwareName   = '*Belgium*e-ID*middleware*'
   file           = "$toolsDir\beidmw_32_4.4.4.msi"
   file64         = "$toolsDir\beidmw_64_4.4.4.msi"
   silentArgs    = "/qn /norestart /l*v `"$($env:TEMP)\$($packageName).$($env:chocolateyPackageVersion).MsiInstall.log`"" # ALLUSERS=1 DISABLEDESKTOPSHORTCUT=1 ADDDESKTOPICON=0 ADDSTARTMENU=0
