@@ -10,7 +10,7 @@ function global:au_SearchReplace {
       "(?i)(^\s*file\s*=\s*`"[$]toolsDir\\).*" = "`${1}$($Latest.FileName32)`""
       "(?i)(^\s*file64\s*=\s*`"[$]toolsDir\\).*" = "`${1}$($Latest.FileName64)`""
     }
-    ".\tools\verification.txt" = @{
+    ".\legal\verification.txt" = @{
       "(?i)(32-Bit.+)\<.*\>" = "`${1}<$($Latest.URL32)>"
       "(?i)(64-Bit.+)\<.*\>" = "`${1}<$($Latest.URL64)>"
       "(?i)(checksum type:\s+).*" = "`${1}$($Latest.ChecksumType32)"
