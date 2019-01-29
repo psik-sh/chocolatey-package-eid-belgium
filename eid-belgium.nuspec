@@ -18,7 +18,7 @@
     <licenseUrl>https://github.com/Fedict/eid-mw/blob/master/COPYING</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <copyright>Copyright 2009-2019 ZETES S.A. and Fedict</copyright>
-    <iconUrl>https://cdn.rawgit.com/wget/chocolatey-package-eid-belgium/a51ad4e6b9e039cd10b103d765ac4f02950be2c7/icon.png</iconUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/wget/chocolatey-package-eid-belgium@afba49f1a20f138506b6958ee36ea7cc21b4c268/icon.png</iconUrl>
     <releaseNotes>https://eid.belgium.be/sites/default/files/content/pdf/rn446.pdf</releaseNotes>
   </metadata>
   <files>
