@@ -28,15 +28,15 @@ function global:au_GetLatest {
   $tags = Invoke-WebRequest 'https://api.github.com/repos/fedict/eid-mw/tags' -UseBasicParsing | ConvertFrom-Json
   
   foreach ($tag in $tags) {
-    $url32 = "https://eid.belgium.be/sites/default/files/software/beidmw_32_$($tag.Name -Replace '[A-Za-z]*','').msi"
-    Write-Host "Checking: $url32"
     try {
-        (Invoke-WebRequest -Uri $url32 -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
-        $version32 = $tag.Name -Replace '[A-Za-z]*',''
-        break
+      $version32 = $tag.Name -Replace '[^0-9.]'
+      $url32 = "https://eid.belgium.be/sites/default/files/software/beidmw_32_$($version32).msi"
+      Write-Verbose "Checking: $url32"
+      (Invoke-WebRequest -Uri $url32 -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
+      break
     } catch [Net.WebException] {
-        [int]$_.Exception.Response.StatusCode
-        continue
+      [int]$_.Exception.Response.StatusCode
+      continue
     }
   }
   
@@ -45,15 +45,15 @@ function global:au_GetLatest {
   }
   
   foreach ($tag in $tags) {
-    $url64 = "https://eid.belgium.be/sites/default/files/software/beidmw_64_$($tag.Name -Replace '[A-Za-z]*','').msi"
-    Write-Host "Checking: $url64"
     try {
-        (Invoke-WebRequest -Uri $url64 -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
-        $version64 = $tag.Name -Replace '[A-Za-z]*',''
-        break
+      $version64 = $tag.Name -Replace '[^0-9.]'
+      $url64 = "https://eid.belgium.be/sites/default/files/software/beidmw_64_$($version64).msi"
+      Write-Verbose "Checking: $url64"
+      (Invoke-WebRequest -Uri $url64 -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
+      break
     } catch [Net.WebException] {
-        [int]$_.Exception.Response.StatusCode
-        continue
+      [int]$_.Exception.Response.StatusCode
+      continue
     }
   }
   
@@ -67,9 +67,10 @@ function global:au_GetLatest {
   
   # Determine release notes URL
   foreach ($tag in $tags) {
-    $urlReleaseNotes = "https://eid.belgium.be/sites/default/files/content/pdf/rn$($tag.Name -Replace '[a-zA-Z._]*','').pdf"
+    $version = $tag.Name -Replace '[^0-9.]'
+    $urlReleaseNotes = "https://eid.belgium.be/sites/default/files/content/pdf/rn$($version).pdf"
     try {
-        Write-Host "Checking: $urlReleaseNotes"
+        Write-Verbose "Checking: $urlReleaseNotes"
         (Invoke-WebRequest -Uri $urlReleaseNotes -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
         break
     } catch [Net.WebException] {
