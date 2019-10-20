@@ -25,7 +25,7 @@ function global:au_SearchReplace {
 
 function global:au_GetLatest {
 
-  $tags = Invoke-WebRequest 'https://api.github.com/repos/fedict/eid-mw/tags' | ConvertFrom-Json
+  $tags = Invoke-WebRequest 'https://api.github.com/repos/fedict/eid-mw/tags' -UseBasicParsing | ConvertFrom-Json
   
   foreach ($tag in $tags) {
     $url32 = "https://eid.belgium.be/sites/default/files/software/beidmw_32_$($tag.Name -Replace '[A-Za-z]*','').msi"
