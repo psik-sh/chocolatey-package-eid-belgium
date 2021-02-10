@@ -23,70 +23,92 @@ function global:au_SearchReplace {
   }
 }
 
-function global:au_GetLatest {
+function Get-VersionUrl($tags, $versionPatterns, $baseURLs, $filenamePatterns, $filenameArchPatterns) {
+  foreach ($tag in $tags) {
+    foreach ($versionPattern in $versionPatterns) {
+      $version = $tag.Name -Replace $versionPattern
+      foreach ($baseUrl in $baseUrls) {
+        foreach ($filename in $filenamePatterns) {
+          foreach ($archPattern in $filenameArchPatterns) {
+            try {
+              $baseUrl = $($baseUrl -Replace "\[VERSION\]","$version" -Replace "\[ARCH\]","$archPattern")
+              $url = $($filename -Replace "\[VERSION\]","$version" -Replace "\[ARCH\]","$archPattern")
+              $url = "$($baseUrl)$($url)"
+              Write-Host "Checking: $url"
+              Invoke-WebRequest -Uri $url -UseBasicParsing -DisableKeepAlive -Method HEAD | Out-Null
+              $versionUrl = @{}
+              $versionUrl.version = $version
+              $versionUrl.url = $url
+              return $versionUrl
+            } catch [Net.WebException] {
+            }
+          }
+        }
+      }
+    }
+  }
+  return $null
+}
 
-  $tags = Invoke-WebRequest 'https://api.github.com/repos/fedict/eid-mw/tags' -UseBasicParsing | ConvertFrom-Json
+function global:au_GetLatest {
   
-  foreach ($tag in $tags) {
-    try {
-      $version32 = $tag.Name -Replace '[^0-9.]'
-      $url32 = "https://eid.belgium.be/sites/default/files/software/beidmw_32_$($version32).msi"
-      Write-Verbose "Checking: $url32"
-      (Invoke-WebRequest -Uri $url32 -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
-      break
-    } catch [Net.WebException] {
-      [int]$_.Exception.Response.StatusCode
-      continue
-    }
+  $tagsUrl = "https://api.github.com/repos/fedict/eid-mw/tags"
+  $baseUrls = @(
+    "https://eid.belgium.be/sites/default/files/software/"
+  )
+  $filenamePatterns = @(
+    "beidmw_[ARCH]_[VERSION].msi",
+    "BeidMW_[ARCH]_[VERSION].msi"
+  )
+  $filename64bitsPatterns = @(
+    "64"
+  )
+  $filename32bitsPatterns = @(
+    "32"
+  )
+  $versionPatterns = @(
+    '[^0-9.]'
+  )
+  $releaseNotesBaseUrls = @(
+    "https://eid.belgium.be/sites/default/files/content/pdf/"
+    "https://dist.eid.belgium.be/releases/[VERSION]/"
+  )
+  $releaseNotesFilenamePatterns = @(
+    "rn[VERSION].pdf",
+    "RN[version].pdf"
+  )
+  $releaseNotesVersionPatterns = @(
+    '[^0-9.]',
+    '[^0-9]'
+  )
+  $errorMessage = "[PREFIX]This shouldn't happen. Upstream has likely changed their URLs, manual intervention required."
+
+  $tags = Invoke-WebRequest $tagsUrl -UseBasicParsing | ConvertFrom-Json
+
+  $versionUrl32 = Get-VersionUrl $tags $versionPatterns $baseUrls $filenamePatterns $filename32bitsPatterns
+  if (!$versionUrl32) {
+    throw $errorMessage -Replace "\[PREFIX\]","The URL to the 32 bits installer was not found. "
+  }
+
+  $versionUrl64 = Get-VersionUrl $tags $versionPatterns $baseUrls $filenamePatterns $filename64bitsPatterns
+  if (!$versionUrl64) {
+    throw $errorMessage -Replace "\[PREFIX\]","The URL to the 64 bits installer was not found. "
+  }
+
+  if ($versionUrl32.version -ne $versionUrl64.version) {
+    throw $errorMessage -Replace "\[PREFIX\]","The detected 32 and 64 bits installers are not the same version. "
   }
   
-  if (!$version32) {
-    throw "The URL to the 32 bits installer was not found. This shouldn't happen. Maybe upstream changed their URLs?"
-  }
-  
-  foreach ($tag in $tags) {
-    try {
-      $version64 = $tag.Name -Replace '[^0-9.]'
-      $url64 = "https://eid.belgium.be/sites/default/files/software/beidmw_64_$($version64).msi"
-      Write-Verbose "Checking: $url64"
-      (Invoke-WebRequest -Uri $url64 -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
-      break
-    } catch [Net.WebException] {
-      [int]$_.Exception.Response.StatusCode
-      continue
-    }
-  }
-  
-  if (!$version64) {
-    throw "The URL to the 64 bits installer was not found. This shouldn't happen. Maybe upstream changed their URLs?"
-  }
-  
-  if ($version32.ToString() -ne $version64.ToString()) {
-    throw "The detected 32 and 64 bits installers are not the same version. This shouldn't happen. Maybe upstream changed their URLs?"
-  }
-  
-  # Determine release notes URL
-  foreach ($tag in $tags) {
-    $version = $tag.Name -Replace '[^0-9.]'
-    $urlReleaseNotes = "https://eid.belgium.be/sites/default/files/content/pdf/rn$($version).pdf"
-    try {
-        Write-Verbose "Checking: $urlReleaseNotes"
-        (Invoke-WebRequest -Uri $urlReleaseNotes -UseBasicParsing -DisableKeepAlive -Method HEAD).StatusCode
-        break
-    } catch [Net.WebException] {
-        [int]$_.Exception.Response.StatusCode
-        continue
-    }
-    if (!$urlReleaseNotes) {
-      throw "The URL to the release notes was not found. This shouldn't happen. Maybe upstream changed their URLs?"
-    }
+  $versionUrlReleaseNotes = Get-VersionUrl $tags $releaseNotesVersionPatterns $releaseNotesBaseUrls $releaseNotesFilenamePatterns @{}
+  if (!$versionUrlReleaseNotes) {
+    throw $errorMessage -Replace "\[PREFIX\]","The URL to the release notes was not found. "
   }
 
   return @{
-    URL32 = $url32
-    URL64 = $url64
-    Version = $version64
-    ReleaseNotes = $urlReleaseNotes
+    URL32 = $versionUrl32.url
+    URL64 = $versionUrl64.url
+    Version = $versionUrl64.version
+    ReleaseNotes = $versionUrlReleaseNotes.url
   }
 }
 
