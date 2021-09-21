@@ -4,7 +4,7 @@
   <metadata>
     <id>eid-belgium</id>
     <title>Belgium e-ID middleware</title>
-    <version>4.1.2</version>
+    <version>5.0.17.5498</version>
     <authors>ZETES S.A., Fedict</authors>
     <owners>chocolatey</owners>
     <summary>Middleware for the Belgian electronic identity card</summary>
